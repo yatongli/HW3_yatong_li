@@ -58,7 +58,7 @@ ebay.1 <- eBayes(fit.1)
 topTable.1 <- topTable(ebay.1, coef="treatmentPoly IC H", number=Inf, sort.by="none")
 
 DEG <- which(topTable.1$adj.P.Val<0.05 & abs(topTable.1$logFC)>log2(1.5))
-length(DEG)
+length(DEG) # 1153
 ```
 
 
