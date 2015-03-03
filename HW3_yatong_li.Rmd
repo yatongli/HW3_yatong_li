@@ -25,53 +25,27 @@ gds <- gds.file[[1]]
 ## Clean data
 
 ```{r}
-pData.gds <- pData(gds)
-# use a subset of the original file
-pData.gds.sub <- pData.gds[ , c("title", "characteristics_ch1", "characteristics_ch1.1", "characteristics_ch1.2")]
-names(pData.gds.sub) <- c("ptid", "y.status", "cell.type", "treatment")
-
-pData.gds.sub.backup <- pData.gds.sub # make a copy of pData.gds.sub
-length(pData.gds.sub$ptid) # 80
-
-# clean-up ptid
-pData.gds.sub.ptid <- vector(, 80)
-for (i in 1:80) {
-  temp <- pData.gds.sub.backup$ptid[i]
-  pData.gds.sub.ptid[i] <- unlist(strsplit(as.character(temp), "_"))[2]
+gds_backup <- gds
+sanitize_pdata <- function(pd){
+  keepCols <- c("title", "characteristics_ch1", "characteristics_ch1.1", "characteristics_ch1.2")
+  pd <- pd[, keepCols]
+  colnames(pd) <- c("ptid", "infection.status", "cell.type", "treatment")
+  pd$ptid <- sapply(pd$ptid, FUN=function(x) {unlist(strsplit(as.character(x), "_"))[2]})
+  pd$infection.status <- sapply(pd$infection.status, FUN=function(x) {unlist(strsplit(as.character(x), ": "))[2]})
+  pd$cell.type <- sapply(pd$cell.type, FUN=function(x) {unlist(strsplit(as.character(x), ": "))[2]})
+  pd$treatment <- sapply(pd$treatment, FUN=function(x) {unlist(strsplit(as.character(x), ": "))[2]})
+  pd
 }
-pData.gds.sub$ptid <- pData.gds.sub.ptid
 
-# clean-up y.status
-pData.gds.sub.y.status <- vector(, 80)
-for (i in 1:80) {
-  temp <- pData.gds.sub.backup$y.status[i]
-  pData.gds.sub.y.status[i] <- unlist(strsplit(as.character(temp), ": "))[2]
-}
-pData.gds.sub$y.status <- pData.gds.sub.y.status
-
-# clean-up cell.type
-pData.gds.sub.cell.type <- vector(, 80)
-for (i in 1:80) {
-  temp <- pData.gds.sub.backup$cell.type[i]
-  pData.gds.sub.cell.type[i] <- unlist(strsplit(as.character(temp), ": "))[2]
-}
-pData.gds.sub$cell.type <- pData.gds.sub.cell.type
-
-# clean-up treatment
-pData.gds.sub.treatment <- vector(, 80)
-for (i in 1:80) {
-  temp <- pData.gds.sub.backup$treatment[i]
-  pData.gds.sub.treatment[i] <- unlist(strsplit(as.character(temp), ": "))[2]
-}
-pData.gds.sub$treatment <- pData.gds.sub.treatment
+pData(gds) <- sanitize_pdata(pData(gds))
 
 # check
-head(pData.gds.sub)
+names(pData(gds))
 ```
 
 ## Get Microphage data
 ```{r}
-macro.data <-gds[, pData.gds.sub$cell.type=="Monocyte-derived Macrophage"]
+macro.data <-gds[, pData(gds)$cell.type=="Monocyte-derived Macrophage"]
 dim(macro.data)
 head(pData(macro.data))
 ```
@@ -81,10 +55,11 @@ head(pData(macro.data))
 mm.1 <- model.matrix(~treatment + ptid, macro.data) # design matrix
 fit.1 <- lmFit(macro.data, mm.1)
 ebay.1 <- eBayes(fit.1)
-topTable.1 <- topTable(ebay.1, coef="treatmentpoly ic h", number=Inf, sort.by="none")
+topTable.1 <- topTable(ebay.1, coef="treatmentPoly IC H", number=Inf, sort.by="none")
 # DEG <- which(topTable.1$adj.P.Val<0.05 & abs(topTable.1$logFC)>log2(1.5))
 # length(DEG)
 ```
+
 
 ## Differential gene expression on a subset of probes
 ```{r}
