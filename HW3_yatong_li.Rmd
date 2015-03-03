@@ -56,14 +56,15 @@ mm.1 <- model.matrix(~treatment + ptid, macro.data) # design matrix
 fit.1 <- lmFit(macro.data, mm.1)
 ebay.1 <- eBayes(fit.1)
 topTable.1 <- topTable(ebay.1, coef="treatmentPoly IC H", number=Inf, sort.by="none")
-# DEG <- which(topTable.1$adj.P.Val<0.05 & abs(topTable.1$logFC)>log2(1.5))
-# length(DEG)
+
+DEG <- which(topTable.1$adj.P.Val<0.05 & abs(topTable.1$logFC)>log2(1.5))
+length(DEG)
 ```
 
 
 ## Differential gene expression on a subset of probes
 ```{r}
-Probe.id <- topTable.1$Probe_Id
+Probe.id <- topTable.1$Probe_Id[DEG]
 Probe.id.macro.data <- rownames(exprs(macro.data))
 sub.macro.data <- macro.data[Probe.id.macro.data %in% Probe.id,]
 
