@@ -72,7 +72,7 @@ mm.2 <- model.matrix(~infection.status, sub.macro.data)
 fit.2 <- lmFit(sub.macro.data, mm.2)
 ebay.2 <- eBayes(fit.2)
 topTable.2 <- topTable(ebay.2,number=Inf,sort.by="none")
-sub.DEG <- which(top.test$P.Value < 0.1)
+sub.DEG <- which(topTable.2$P.Value < 0.1)
 length(sub.DEG)
 ```
 
