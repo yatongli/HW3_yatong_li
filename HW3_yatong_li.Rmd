@@ -112,5 +112,4 @@ sub.Probe.id.exprs.data <- express.macro.data[index, ]
 # plot
 pheatmap(sub.Probe.id.exprs.data)
 heatmap(sub.Probe.id.exprs.data)
-# 
 ```
